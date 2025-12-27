@@ -17,6 +17,7 @@ const departmentRoutes = require('./routes/departments');
 const teamRoutes = require('./routes/teams');
 const equipmentRoutes = require('./routes/equipment');
 const requestRoutes = require('./routes/requests');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use('/api/departments', departmentRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/equipment', equipmentRoutes);
 app.use('/api/requests', requestRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
