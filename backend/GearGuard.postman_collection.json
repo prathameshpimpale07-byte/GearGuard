@@ -1,22 +1,44 @@
 {
     "info": {
         "_postman_id": "gearguard-backend-api",
-        "name": "GearGuard API",
-        "description": "Comprehensive API collection for GearGuard Maintenance System, pre-configured with seeded data IDs.",
+        "name": "GearGuard API - Complete Database Seeding",
+        "description": "Comprehensive API collection for GearGuard Maintenance System with complete database seeding workflow. Follow the order: 1) Auth, 2) Departments, 3) Teams, 4) Users, 5) Equipment, 6) Maintenance Requests. This version is IDEMPOTENT and will not create duplicate data.",
         "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
     },
     "item": [
         {
-            "name": "Auth",
+            "name": "1. Authentication",
             "item": [
                 {
-                    "name": "Login (Admin)",
+                    "name": "Register Admin User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.environment.set(\"token\", jsonData.token);",
+                                    "    pm.environment.set(\"adminId\", jsonData.user.id);",
+                                    "    console.log(\"Admin user created.\");",
+                                    "} else if (pm.response.code === 400 && pm.response.json().message === \"User already exists\") {",
+                                    "    console.log(\"Admin user already exists, proceeding to login.\");",
+                                    "} else {",
+                                    "    pm.test(\"Successful registration or already exists\", function () {",
+                                    "        pm.expect(pm.response.code).to.be.oneOf([201, 400]);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"email\": \"admin@gearguard.com\",\n    \"password\": \"password123\"\n}",
+                            "raw": "{\n    \"name\": \"System Administrator\",\n    \"email\": \"admin@gearguard.com\",\n    \"password\": \"Admin@123\",\n    \"role\": \"admin\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -24,55 +46,42 @@
                             }
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/api/auth/login",
+                            "raw": "{{baseUrl}}/api/auth/register",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "api",
                                 "auth",
-                                "login"
+                                "register"
                             ]
                         }
                     },
                     "response": []
                 },
                 {
-                    "name": "Login (Manager)",
-                    "request": {
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                            "mode": "raw",
-                            "raw": "{\n    \"email\": \"manager@gearguard.com\",\n    \"password\": \"password123\"\n}",
-                            "options": {
-                                "raw": {
-                                    "language": "json"
-                                }
+                    "name": "Login Admin",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "    var jsonData = pm.response.json();",
+                                    "    pm.environment.set(\"token\", jsonData.token);",
+                                    "    pm.environment.set(\"adminId\", jsonData.user.id);",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
                             }
-                        },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/auth/login",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "auth",
-                                "login"
-                            ]
                         }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Login (Technician)",
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"email\": \"tech@gearguard.com\",\n    \"password\": \"password123\"\n}",
+                            "raw": "{\n    \"email\": \"admin@gearguard.com\",\n    \"password\": \"Admin@123\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -96,59 +105,33 @@
             ]
         },
         {
-            "name": "Users",
+            "name": "2. Departments",
             "item": [
                 {
-                    "name": "List Users",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}",
-                                "type": "text"
+                    "name": "Create Production Department",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"productionDeptId\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/departments\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const depts = res.json().data;",
+                                    "        const dept = depts.find(d => d.name === \"Production\");",
+                                    "        if (dept) pm.environment.set(\"productionDeptId\", dept._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
                             }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/users",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "users"
-                            ]
                         }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Get Seeded Technician",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}",
-                                "type": "text"
-                            }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/users/987654987654987654987654",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "users",
-                                "987654987654987654987654"
-                            ]
-                        }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Create User",
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [
@@ -160,42 +143,13 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"New Employee\",\n    \"email\": \"new.emp@gearguard.com\",\n    \"password\": \"password123\",\n    \"role\": \"employee\"\n}",
+                            "raw": "{\n    \"name\": \"Production\",\n    \"description\": \"Manufacturing and production operations\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
                                 }
                             }
                         },
-                        "url": {
-                            "raw": "{{baseUrl}}/api/users",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "users"
-                            ]
-                        }
-                    },
-                    "response": []
-                }
-            ]
-        },
-        {
-            "name": "Organization",
-            "item": [
-                {
-                    "name": "List Departments",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}",
-                                "type": "text"
-                            }
-                        ],
                         "url": {
                             "raw": "{{baseUrl}}/api/departments",
                             "host": [
@@ -210,31 +164,30 @@
                     "response": []
                 },
                 {
-                    "name": "List Teams",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}",
-                                "type": "text"
+                    "name": "Create Maintenance Department",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"maintenanceDeptId\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/departments\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const depts = res.json().data;",
+                                    "        const dept = depts.find(d => d.name === \"Maintenance\");",
+                                    "        if (dept) pm.environment.set(\"maintenanceDeptId\", dept._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
                             }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/teams",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "teams"
-                            ]
                         }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Create Team",
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [
@@ -246,7 +199,124 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"team_name\": \"Beta Squad\",\n    \"description\": \"Electrical Specialists\"\n}",
+                            "raw": "{\n    \"name\": \"Maintenance\",\n    \"description\": \"Equipment maintenance and repair services\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/departments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "departments"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Quality Control Department",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"qcDeptId\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/departments\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const depts = res.json().data;",
+                                    "        const dept = depts.find(d => d.name === \"Quality Control\");",
+                                    "        if (dept) pm.environment.set(\"qcDeptId\", dept._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Quality Control\",\n    \"description\": \"Product quality assurance and testing\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/departments",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "departments"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "3. Maintenance Teams",
+            "item": [
+                {
+                    "name": "Create Alpha Team (Mechanical)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"alphaTeamId\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/teams\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const teams = res.json().data;",
+                                    "        const team = teams.find(t => t.team_name === \"Alpha Team\");",
+                                    "        if (team) pm.environment.set(\"alphaTeamId\", team._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"team_name\": \"Alpha Team\",\n    \"description\": \"Mechanical equipment specialists\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -267,7 +337,30 @@
                     "response": []
                 },
                 {
-                    "name": "Add Member to Team",
+                    "name": "Create Beta Team (Electrical)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"betaTeamId\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/teams\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const teams = res.json().data;",
+                                    "        const team = teams.find(t => t.team_name === \"Beta Team\");",
+                                    "        if (team) pm.environment.set(\"betaTeamId\", team._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [
@@ -279,7 +372,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"userId\": \"987654987654987654987654\"\n}",
+                            "raw": "{\n    \"team_name\": \"Beta Team\",\n    \"description\": \"Electrical and electronics specialists\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -287,14 +380,519 @@
                             }
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/api/teams/789012789012789012789012/members",
+                            "raw": "{{baseUrl}}/api/teams",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "teams"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Gamma Team (HVAC)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"gammaTeamId\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/teams\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const teams = res.json().data;",
+                                    "        const team = teams.find(t => t.team_name === \"Gamma Team\");",
+                                    "        if (team) pm.environment.set(\"gammaTeamId\", team._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"team_name\": \"Gamma Team\",\n    \"description\": \"HVAC and climate control specialists\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/teams",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "teams"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "4. Users",
+            "item": [
+                {
+                    "name": "Create Manager User",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"managerId\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/users\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const users = res.json().data;",
+                                    "        const user = users.find(u => u.email === \"manager@gearguard.com\");",
+                                    "        if (user) pm.environment.set(\"managerId\", user._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"John Manager\",\n    \"email\": \"manager@gearguard.com\",\n    \"password\": \"Manager@123\",\n    \"role\": \"manager\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Technician 1 (Mike)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"tech1Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/users\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const users = res.json().data;",
+                                    "        const user = users.find(u => u.email === \"mike.tech@gearguard.com\");",
+                                    "        if (user) pm.environment.set(\"tech1Id\", user._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Mike Johnson\",\n    \"email\": \"mike.tech@gearguard.com\",\n    \"password\": \"Tech@123\",\n    \"role\": \"technician\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Technician 2 (Sarah)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"tech2Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/users\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const users = res.json().data;",
+                                    "        const user = users.find(u => u.email === \"sarah.tech@gearguard.com\");",
+                                    "        if (user) pm.environment.set(\"tech2Id\", user._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Sarah Williams\",\n    \"email\": \"sarah.tech@gearguard.com\",\n    \"password\": \"Tech@123\",\n    \"role\": \"technician\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Technician 3 (David)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"tech3Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/users\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const users = res.json().data;",
+                                    "        const user = users.find(u => u.email === \"david.tech@gearguard.com\");",
+                                    "        if (user) pm.environment.set(\"tech3Id\", user._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"David Brown\",\n    \"email\": \"david.tech@gearguard.com\",\n    \"password\": \"Tech@123\",\n    \"role\": \"technician\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Employee 1 (Emily)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"emp1Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/users\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const users = res.json().data;",
+                                    "        const user = users.find(u => u.email === \"emily.emp@gearguard.com\");",
+                                    "        if (user) pm.environment.set(\"emp1Id\", user._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Emily Davis\",\n    \"email\": \"emily.emp@gearguard.com\",\n    \"password\": \"Employee@123\",\n    \"role\": \"employee\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Employee 2 (Robert)",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"emp2Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/users\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const users = res.json().data;",
+                                    "        const user = users.find(u => u.email === \"robert.emp@gearguard.com\");",
+                                    "        if (user) pm.environment.set(\"emp2Id\", user._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Robert Miller\",\n    \"email\": \"robert.emp@gearguard.com\",\n    \"password\": \"Employee@123\",\n    \"role\": \"employee\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/users",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "users"
+                            ]
+                        }
+                    },
+                    "response": []
+                }
+            ]
+        },
+        {
+            "name": "5. Add Team Members",
+            "item": [
+                {
+                    "name": "Add Mike to Alpha Team",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userId\": \"{{tech1Id}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/teams/{{alphaTeamId}}/members",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "api",
                                 "teams",
-                                "789012789012789012789012",
+                                "{{alphaTeamId}}",
+                                "members"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Add Sarah to Beta Team",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userId\": \"{{tech2Id}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/teams/{{betaTeamId}}/members",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "teams",
+                                "{{betaTeamId}}",
+                                "members"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Add David to Gamma Team",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"userId\": \"{{tech3Id}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/teams/{{gammaTeamId}}/members",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "teams",
+                                "{{gammaTeamId}}",
                                 "members"
                             ]
                         }
@@ -304,34 +902,33 @@
             ]
         },
         {
-            "name": "Equipment",
+            "name": "6. Equipment",
             "item": [
                 {
-                    "name": "List Equipment",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}",
-                                "type": "text"
+                    "name": "Create CNC Machine",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"equipment1Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/equipment?serial_number=CNC-2024-001\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const equipments = res.json().data;",
+                                    "        const equip = equipments.find(e => e.serial_number === \"CNC-2024-001\");",
+                                    "        if (equip) pm.environment.set(\"equipment1Id\", equip._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
                             }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/equipment",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "equipment"
-                            ]
                         }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Create Equipment",
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [
@@ -343,7 +940,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"name\": \"Lathe Machine X1\",\n    \"serial_number\": \"LATH-X1-2024\",\n    \"category\": \"Machinery\",\n    \"location\": \"Zone B-5\",\n    \"department\": \"123456123456123456123456\",\n    \"maintenance_team\": \"789012789012789012789012\",\n    \"purchase_date\": \"2024-01-01\",\n    \"warranty_expiry\": \"2027-01-01\"\n}",
+                            "raw": "{\n    \"name\": \"CNC Milling Machine\",\n    \"serial_number\": \"CNC-2024-001\",\n    \"category\": \"Machinery\",\n    \"location\": \"Production Floor - Zone A1\",\n    \"department\": \"{{productionDeptId}}\",\n    \"maintenance_team\": \"{{alphaTeamId}}\",\n    \"assigned_employee\": \"{{emp1Id}}\",\n    \"purchase_date\": \"2023-01-15\",\n    \"warranty_expiry\": \"2026-01-15\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -364,9 +961,32 @@
                     "response": []
                 },
                 {
-                    "name": "Get Specific Equipment",
+                    "name": "Create Industrial Lathe",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"equipment2Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/equipment?serial_number=LATHE-2024-002\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const equipments = res.json().data;",
+                                    "        const equip = equipments.find(e => e.serial_number === \"LATHE-2024-002\");",
+                                    "        if (equip) pm.environment.set(\"equipment2Id\", equip._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
                     "request": {
-                        "method": "GET",
+                        "method": "POST",
                         "header": [
                             {
                                 "key": "Authorization",
@@ -374,15 +994,191 @@
                                 "type": "text"
                             }
                         ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Industrial Lathe Machine\",\n    \"serial_number\": \"LATHE-2024-002\",\n    \"category\": \"Machinery\",\n    \"location\": \"Production Floor - Zone A2\",\n    \"department\": \"{{productionDeptId}}\",\n    \"maintenance_team\": \"{{alphaTeamId}}\",\n    \"assigned_employee\": \"{{emp2Id}}\",\n    \"purchase_date\": \"2023-03-20\",\n    \"warranty_expiry\": \"2026-03-20\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
                         "url": {
-                            "raw": "{{baseUrl}}/api/equipment/abcdefabcdefabcdefabcdef",
+                            "raw": "{{baseUrl}}/api/equipment",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "api",
-                                "equipment",
-                                "abcdefabcdefabcdefabcdef"
+                                "equipment"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Power Generator",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"equipment3Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/equipment?serial_number=GEN-2024-003\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const equipments = res.json().data;",
+                                    "        const equip = equipments.find(e => e.serial_number === \"GEN-2024-003\");",
+                                    "        if (equip) pm.environment.set(\"equipment3Id\", equip._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Backup Power Generator\",\n    \"serial_number\": \"GEN-2024-003\",\n    \"category\": \"Electrical\",\n    \"location\": \"Utility Room - Building B\",\n    \"department\": \"{{maintenanceDeptId}}\",\n    \"maintenance_team\": \"{{betaTeamId}}\",\n    \"purchase_date\": \"2022-11-10\",\n    \"warranty_expiry\": \"2025-11-10\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/equipment",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "equipment"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create HVAC System",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"equipment4Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/equipment?serial_number=HVAC-2024-004\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const equipments = res.json().data;",
+                                    "        const equip = equipments.find(e => e.serial_number === \"HVAC-2024-004\");",
+                                    "        if (equip) pm.environment.set(\"equipment4Id\", equip._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Central HVAC System\",\n    \"serial_number\": \"HVAC-2024-004\",\n    \"category\": \"HVAC\",\n    \"location\": \"Rooftop - Building A\",\n    \"department\": \"{{maintenanceDeptId}}\",\n    \"maintenance_team\": \"{{gammaTeamId}}\",\n    \"purchase_date\": \"2021-06-01\",\n    \"warranty_expiry\": \"2024-06-01\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/equipment",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "equipment"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Hydraulic Press",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"equipment5Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/equipment?serial_number=PRESS-2024-005\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const equipments = res.json().data;",
+                                    "        const equip = equipments.find(e => e.serial_number === \"PRESS-2024-005\");",
+                                    "        if (equip) pm.environment.set(\"equipment5Id\", equip._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"name\": \"Hydraulic Press Machine\",\n    \"serial_number\": \"PRESS-2024-005\",\n    \"category\": \"Machinery\",\n    \"location\": \"Production Floor - Zone B1\",\n    \"department\": \"{{productionDeptId}}\",\n    \"maintenance_team\": \"{{alphaTeamId}}\",\n    \"purchase_date\": \"2023-08-15\",\n    \"warranty_expiry\": \"2026-08-15\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/equipment",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "equipment"
                             ]
                         }
                     },
@@ -391,34 +1187,33 @@
             ]
         },
         {
-            "name": "Requests",
+            "name": "7. Maintenance Requests",
             "item": [
                 {
-                    "name": "List All Requests",
-                    "request": {
-                        "method": "GET",
-                        "header": [
-                            {
-                                "key": "Authorization",
-                                "value": "Bearer {{token}}",
-                                "type": "text"
+                    "name": "Create Preventive Maintenance - CNC",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"request1Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/requests\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const requests = res.json().data;",
+                                    "        const req = requests.find(r => r.subject === \"Quarterly Preventive Maintenance\" && r.equipment === pm.environment.get(\"equipment1Id\"));",
+                                    "        if (req) pm.environment.set(\"request1Id\", req._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
                             }
-                        ],
-                        "url": {
-                            "raw": "{{baseUrl}}/api/requests",
-                            "host": [
-                                "{{baseUrl}}"
-                            ],
-                            "path": [
-                                "api",
-                                "requests"
-                            ]
                         }
-                    },
-                    "response": []
-                },
-                {
-                    "name": "Create Request (For Seeded Equip)",
+                    ],
                     "request": {
                         "method": "POST",
                         "header": [
@@ -430,7 +1225,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n    \"subject\": \"Noise in Gearbox\",\n    \"description\": \"Loud grinding noise during operation.\",\n    \"type\": \"corrective\",\n    \"priority\": \"medium\",\n    \"equipment_id\": \"abcdefabcdefabcdefabcdef\"\n}",
+                            "raw": "{\n    \"subject\": \"Quarterly Preventive Maintenance\",\n    \"description\": \"Scheduled quarterly maintenance including lubrication, calibration, and inspection of all moving parts.\",\n    \"type\": \"preventive\",\n    \"priority\": \"medium\",\n    \"equipment_id\": \"{{equipment1Id}}\",\n    \"scheduled_date\": \"2025-01-15T09:00:00.000Z\"\n}",
                             "options": {
                                 "raw": {
                                     "language": "json"
@@ -451,7 +1246,231 @@
                     "response": []
                 },
                 {
-                    "name": "Update Request Stage (Seeded Request)",
+                    "name": "Create Corrective Maintenance - Lathe",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"request2Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/requests\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const requests = res.json().data;",
+                                    "        const req = requests.find(r => r.subject === \"Unusual Vibration in Spindle\" && r.equipment === pm.environment.get(\"equipment2Id\"));",
+                                    "        if (req) pm.environment.set(\"request2Id\", req._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"subject\": \"Unusual Vibration in Spindle\",\n    \"description\": \"Machine is producing excessive vibration during operation. Possible bearing issue. Requires immediate attention.\",\n    \"type\": \"corrective\",\n    \"priority\": \"high\",\n    \"equipment_id\": \"{{equipment2Id}}\",\n    \"assigned_technician\": \"{{tech1Id}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/requests",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "requests"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Corrective Maintenance - Generator",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"request3Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/requests\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const requests = res.json().data;",
+                                    "        const req = requests.find(r => r.subject === \"Generator Not Starting\" && r.equipment === pm.environment.get(\"equipment3Id\"));",
+                                    "        if (req) pm.environment.set(\"request3Id\", req._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"subject\": \"Generator Not Starting\",\n    \"description\": \"Backup generator fails to start during weekly test. Battery and fuel levels checked - appear normal.\",\n    \"type\": \"corrective\",\n    \"priority\": \"high\",\n    \"equipment_id\": \"{{equipment3Id}}\",\n    \"assigned_technician\": \"{{tech2Id}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/requests",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "requests"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Preventive Maintenance - HVAC",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"request4Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/requests\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const requests = res.json().data;",
+                                    "        const req = requests.find(r => r.subject === \"Monthly Filter Replacement\" && r.equipment === pm.environment.get(\"equipment4Id\"));",
+                                    "        if (req) pm.environment.set(\"request4Id\", req._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"subject\": \"Monthly Filter Replacement\",\n    \"description\": \"Replace air filters and clean condenser coils as part of monthly preventive maintenance schedule.\",\n    \"type\": \"preventive\",\n    \"priority\": \"low\",\n    \"equipment_id\": \"{{equipment4Id}}\",\n    \"assigned_technician\": \"{{tech3Id}}\",\n    \"scheduled_date\": \"2025-01-10T14:00:00.000Z\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/requests",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "requests"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Create Corrective Maintenance - Hydraulic Press",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "    pm.environment.set(\"request5Id\", pm.response.json().data._id);",
+                                    "} else {",
+                                    "    pm.sendRequest({",
+                                    "        url: pm.environment.get(\"baseUrl\") + \"/api/requests\",",
+                                    "        method: 'GET',",
+                                    "        header: { 'Authorization': 'Bearer ' + pm.environment.get(\"token\") }",
+                                    "    }, function (err, res) {",
+                                    "        const requests = res.json().data;",
+                                    "        const req = requests.find(r => r.subject === \"Hydraulic Fluid Leak\" && r.equipment === pm.environment.get(\"equipment5Id\"));",
+                                    "        if (req) pm.environment.set(\"request5Id\", req._id);",
+                                    "    });",
+                                    "}"
+                                ],
+                                "type": "text/javascript"
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n    \"subject\": \"Hydraulic Fluid Leak\",\n    \"description\": \"Small hydraulic fluid leak detected near the main cylinder. Needs seal replacement.\",\n    \"type\": \"corrective\",\n    \"priority\": \"medium\",\n    \"equipment_id\": \"{{equipment5Id}}\",\n    \"assigned_technician\": \"{{tech1Id}}\"\n}",
+                            "options": {
+                                "raw": {
+                                    "language": "json"
+                                }
+                            }
+                        },
+                        "url": {
+                            "raw": "{{baseUrl}}/api/requests",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "requests"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Update Request to In-Progress",
                     "request": {
                         "method": "PUT",
                         "header": [
@@ -471,15 +1490,40 @@
                             }
                         },
                         "url": {
-                            "raw": "{{baseUrl}}/api/requests/deadbeefdeadbeefdeadbeef/stage",
+                            "raw": "{{baseUrl}}/api/requests/{{request2Id}}/stage",
                             "host": [
                                 "{{baseUrl}}"
                             ],
                             "path": [
                                 "api",
                                 "requests",
-                                "deadbeefdeadbeefdeadbeef",
+                                "{{request2Id}}",
                                 "stage"
+                            ]
+                        }
+                    },
+                    "response": []
+                },
+                {
+                    "name": "Get Dashboard Stats",
+                    "request": {
+                        "method": "GET",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}",
+                                "type": "text"
+                            }
+                        ],
+                        "url": {
+                            "raw": "{{baseUrl}}/api/stats/dashboard",
+                            "host": [
+                                "{{baseUrl}}"
+                            ],
+                            "path": [
+                                "api",
+                                "stats",
+                                "dashboard"
                             ]
                         }
                     },
@@ -514,7 +1558,7 @@
         },
         {
             "key": "token",
-            "value": "PASTE_YOUR_LOGIN_TOKEN_HERE",
+            "value": "",
             "type": "string"
         }
     ]

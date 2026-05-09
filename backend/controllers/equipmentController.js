@@ -112,7 +112,6 @@ exports.getEquipmentRequests = async (req, res) => {
             .populate('assigned_technician', 'name')
             .populate('created_by', 'name');
 
-        const requests = await MaintenanceRequest.find({ equipment: req.params.id });
         res.status(200).json({ success: true, count: requests.length, data: requests });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });
@@ -131,8 +130,6 @@ exports.getOpenRequestCount = async (req, res) => {
             status: { $in: ['new', 'in_progress', 'on_hold'] }
         });
 
-            stage: { $in: ['new', 'in-progress'] }
-        });
         res.status(200).json({ success: true, count });
     } catch (error) {
         res.status(500).json({ success: false, message: error.message });

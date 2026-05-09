@@ -1,0 +1,157 @@
+.request-detail-page {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.header-badges {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.detail-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.info-section {
+    margin-bottom: 1.5rem;
+}
+
+.info-section h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+
+.description-text {
+    color: #6b7280;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-label {
+    color: #6b7280;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.info-value {
+    color: #1f2937;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.info-link {
+    color: #3b82f6;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.info-link:hover {
+    text-decoration: underline;
+}
+
+.stage-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.stage-btn {
+    padding: 1rem;
+    border: 2px solid #e5e7eb;
+    background: white;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.stage-btn:hover:not(:disabled) {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+
+.stage-btn.active {
+    border-color: #3b82f6;
+    background: #3b82f6;
+    color: white;
+}
+
+.stage-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.stage-badge,
+.priority-badge,
+.type-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.stage-new {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.stage-progress {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.stage-repaired {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.stage-scrap {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.priority-low {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.priority-medium {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.priority-high {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.type-preventive {
+    background: #e0e7ff;
+    color: #4338ca;
+}
+
+.type-corrective {
+    background: #fce7f3;
+    color: #9f1239;
+}

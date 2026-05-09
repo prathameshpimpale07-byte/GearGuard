@@ -74,12 +74,12 @@ const LoginPage = () => {
                         </div>
                     </form>
 
-                    <div className="demo-credentials">
+                    {/* <div className="demo-credentials">
                         <p><strong>Demo Credentials:</strong></p>
                         <p>Admin: admin@gearguard.com / admin123</p>
                         <p>Manager: manager@gearguard.com / manager123</p>
                         <p>Technician: tech@gearguard.com / tech123</p>
-                    </div>
+                    </div> */}
                 </div>
             </div>
         </div>

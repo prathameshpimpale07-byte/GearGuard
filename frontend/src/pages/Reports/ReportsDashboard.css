@@ -1,0 +1,205 @@
+/* ... existing code ... */
+
+.reports-header-interactive {
+    margin-bottom: 2rem;
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    padding: 2rem;
+    border-radius: 16px;
+    color: white;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    display: flex;
+    justify-content: space-between;
+    /* Improved layout for interactivity */
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.reports-header-interactive h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.reports-header-interactive p {
+    opacity: 0.8;
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.time-filter {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 0.25rem;
+    display: flex;
+}
+
+.time-filter button {
+    background: transparent;
+    border: none;
+    color: #cbd5e1;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.time-filter button:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.time-filter button.active {
+    background: white;
+    color: #0f172a;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.export-btn {
+    background: #3b82f6;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.export-btn:hover {
+    background: #2563eb;
+}
+
+/* Drill Down Styles */
+.drill-down-panel {
+    margin-top: 2rem;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 1rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.drill-down-panel h3 {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    color: #475569;
+}
+
+.drill-down-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.drill-down-table th,
+.drill-down-table td {
+    padding: 0.5rem;
+    text-align: left;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.drill-down-table th {
+    font-weight: 600;
+    color: #64748b;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.kpi-card {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border-left: 4px solid transparent;
+}
+
+.kpi-card.kpi-blue {
+    border-left-color: #3b82f6;
+}
+
+.kpi-card.kpi-green {
+    border-left-color: #22c55e;
+}
+
+.kpi-card.kpi-purple {
+    border-left-color: #a855f7;
+}
+
+.kpi-card.kpi-orange {
+    border-left-color: #f97316;
+}
+
+.kpi-label {
+    font-size: 0.875rem;
+    color: #64748b;
+    margin-bottom: 0.5rem;
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 1024px) {
+    .charts-row {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.report-section {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.chart-container-large {
+    height: 350px;
+    width: 100%;
+}
+
+.chart-container-medium {
+    height: 300px;
+    width: 100%;
+}

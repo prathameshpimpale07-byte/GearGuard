@@ -160,10 +160,10 @@ exports.changeStage = async (req, res) => {
 exports.getCalendarRequests = async (req, res) => {
     try {
         const requests = await MaintenanceRequest.find({
-            scheduled_date: { $exists: true }
-        }).populate('equipment', 'name');
             scheduled_date: { $exists: true, $ne: null }
-        }).select('subject scheduled_date type');
+        })
+            .populate('equipment', 'name')
+            .select('subject scheduled_date type');
 
         res.status(200).json({ success: true, count: requests.length, data: requests });
     } catch (error) {
@@ -176,15 +176,10 @@ exports.getCalendarRequests = async (req, res) => {
 // @access  Private
 exports.getOverdueRequests = async (req, res) => {
     try {
-        const today = new Date();
-        const requests = await MaintenanceRequest.find({
-            stage: { $ne: 'completed' },
-            due_date: { $lt: today }
-        }).populate('equipment', 'name');
         const requests = await MaintenanceRequest.find({
             scheduled_date: { $lt: new Date() },
             stage: { $in: ['new', 'in-progress'] }
-        });
+        }).populate('equipment', 'name');
 
         res.status(200).json({ success: true, count: requests.length, data: requests });
     } catch (error) {

@@ -22,8 +22,8 @@ const Navbar = () => {
                 <div className="navbar-menu">
                     <Link to="/dashboard" className="nav-link">Dashboard</Link>
                     <Link to="/equipment" className="nav-link">Equipment</Link>
-                    <Link to="/requests" className="nav-link">Requests</Link>
-                    <Link to="/calendar" className="nav-link">Calendar</Link>
+                    <Link to="/maintenance" className="nav-link">Requests</Link>
+                    <Link to="/maintenance/calendar" className="nav-link">Calendar</Link>
 
                     {hasRole(['admin', 'manager']) && (
                         <Link to="/teams" className="nav-link">Teams</Link>
